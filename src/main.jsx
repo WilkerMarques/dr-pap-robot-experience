@@ -7,7 +7,6 @@ import {
   BarChart3,
   CheckCircle2,
   ClipboardCheck,
-  Download,
   HeartPulse,
   Hospital,
   MessageCircleOff,
@@ -20,6 +19,10 @@ import {
 import './styles.css';
 
 const AVATAR_SRC = '/dr-pap-avatar.png';
+const IDLE_RESET_SECONDS = 60;
+const IDLE_WARN_SECONDS = 15;
+const THANKS_AUTO_RESET_SECONDS = 25;
+const EMPTY_LEAD = { nome: '', hospital: '', whatsapp: '' };
 
 function formatWhatsappInput(value) {
   const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -101,10 +104,12 @@ function App() {
   const [history, setHistory] = useState([]);
   const [quizIndex, setQuizIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [lead, setLead] = useState({ nome: '', hospital: '', whatsapp: '' });
+  const [lead, setLead] = useState({ ...EMPTY_LEAD });
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadSubmitError, setLeadSubmitError] = useState('');
   const [lastInteraction, setLastInteraction] = useState(Date.now());
+  const [clockTick, setClockTick] = useState(0);
+  const [thanksStartedAt, setThanksStartedAt] = useState(null);
 
   const go = (next) => {
     setHistory((prev) => [...prev, screen]);
@@ -127,18 +132,49 @@ function App() {
     setHistory([]);
     setQuizIndex(0);
     setAnswers([]);
+    setLead({ ...EMPTY_LEAD });
     setLeadSubmitError('');
     setLeadSubmitting(false);
+    setThanksStartedAt(null);
     setLastInteraction(Date.now());
   };
 
+  const touch = () => setLastInteraction(Date.now());
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      const inactiveSeconds = (Date.now() - lastInteraction) / 1000;
-      if (screen !== screens.idle && inactiveSeconds > 75) reset();
-    }, 1000);
+    const timer = setInterval(() => setClockTick((value) => value + 1), 1000);
     return () => clearInterval(timer);
-  }, [lastInteraction, screen]);
+  }, []);
+
+  useEffect(() => {
+    if (screen === screens.idle || screen === screens.thanks) return undefined;
+    const inactiveSeconds = (Date.now() - lastInteraction) / 1000;
+    if (inactiveSeconds >= IDLE_RESET_SECONDS) reset();
+    return undefined;
+  }, [lastInteraction, screen, clockTick]);
+
+  useEffect(() => {
+    if (screen !== screens.thanks) return undefined;
+    setThanksStartedAt(Date.now());
+    const timer = setTimeout(reset, THANKS_AUTO_RESET_SECONDS * 1000);
+    return () => clearTimeout(timer);
+  }, [screen]);
+
+  const idleSecondsLeft = useMemo(() => {
+    if (screen === screens.idle || screen === screens.thanks) return IDLE_RESET_SECONDS;
+    const inactiveSeconds = (Date.now() - lastInteraction) / 1000;
+    return Math.max(0, Math.ceil(IDLE_RESET_SECONDS - inactiveSeconds));
+  }, [lastInteraction, screen, clockTick]);
+
+  const thanksSecondsLeft = useMemo(() => {
+    if (!thanksStartedAt) return THANKS_AUTO_RESET_SECONDS;
+    const elapsed = (Date.now() - thanksStartedAt) / 1000;
+    return Math.max(0, Math.ceil(THANKS_AUTO_RESET_SECONDS - elapsed));
+  }, [thanksStartedAt, clockTick]);
+
+  const showIdleWarning = screen !== screens.idle
+    && screen !== screens.thanks
+    && idleSecondsLeft <= IDLE_WARN_SECONDS;
 
   const score = useMemo(() => answers.reduce((acc, item) => acc + item.score, 0), [answers]);
   const maxScore = quizQuestions.length * 3;
@@ -194,8 +230,32 @@ function App() {
   };
 
   return (
-    <main className="tablet-app" onPointerDown={() => setLastInteraction(Date.now())}>
+    <main className="tablet-app" onPointerDown={touch}>
       <motion.div className="tablet-viewport">
+        {screen !== screens.idle && (
+          <button
+            type="button"
+            className="kiosk-exit"
+            onClick={(event) => {
+              event.stopPropagation();
+              reset();
+            }}
+          >
+            Sair
+          </button>
+        )}
+
+        <AnimatePresence>
+          {showIdleWarning && (
+            <SessionTimeoutBanner
+              key="idle-warning"
+              secondsLeft={idleSecondsLeft}
+              onContinue={touch}
+              onExit={reset}
+            />
+          )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {screen === screens.idle && <Idle key="idle" onStart={startQuiz} />}
           {screen === screens.modules && <Modules key="modules" onBack={back} />}
@@ -216,10 +276,39 @@ function App() {
               onClearSubmitError={() => setLeadSubmitError('')}
             />
           )}
-          {screen === screens.thanks && <Thanks key="thanks" reset={reset} />}
+          {screen === screens.thanks && (
+            <Thanks key="thanks" reset={reset} autoReturnSeconds={thanksSecondsLeft} />
+          )}
         </AnimatePresence>
       </motion.div>
     </main>
+  );
+}
+
+function SessionTimeoutBanner({ secondsLeft, onContinue, onExit }) {
+  return (
+    <motion.div
+      className="session-timeout"
+      role="alertdialog"
+      aria-live="assertive"
+      aria-label="Sessão expirando"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 16 }}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      <p className="session-timeout-text">
+        Sem interação. Voltando ao início em <strong>{secondsLeft}s</strong>
+      </p>
+      <motion.div className="session-timeout-actions">
+        <button type="button" className="session-timeout-continue" onClick={onContinue}>
+          Continuar
+        </button>
+        <button type="button" className="session-timeout-exit" onClick={onExit}>
+          Sair agora
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -579,35 +668,54 @@ function Lead({
   );
 }
 
-function Thanks({ reset }) {
+function Thanks({ reset, autoReturnSeconds }) {
   return (
     <Page className="thanks-page">
-      <CheckCircle2 size={80} />
-      <h1>Obrigado!</h1>
-      <p>Seu contato foi registrado. Nossa equipe vai chamar você para uma demonstração.</p>
-      <button type="button" className="primary large" onClick={reset}>Voltar ao início</button>
-      <ExportLeads />
-    </Page>
-  );
-}
+      <motion.div
+        className="thanks-screen-stage"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.28 }}
+      >
+        <motion.div className="thanks-screen">
+          <motion.div
+            className="thanks-content"
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.08 }}
+          >
+            <motion.div
+              className="thanks-icon"
+              aria-hidden
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.45, delay: 0.12 }}
+            >
+              <CheckCircle2 size={72} strokeWidth={2.25} />
+            </motion.div>
+            <h1 className="thanks-title">Obrigado!</h1>
+            <p className="thanks-message">
+              Seu contato foi registrado. Nossa equipe vai chamar você para uma demonstração.
+            </p>
+            <p className="thanks-auto-return">
+              Voltando ao início em {autoReturnSeconds}s
+            </p>
+          </motion.div>
 
-function ExportLeads() {
-  const exportCsv = () => {
-    const leads = JSON.parse(localStorage.getItem('drpap_leads') || '[]');
-    const rows = [['Nome', 'Hospital', 'WhatsApp', 'Maturidade', 'Data'], ...leads.map((l) => [l.nome, l.hospital, l.whatsapp, l.maturidade, l.data])];
-    const csv = rows.map((row) => row.map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(';')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'leads-dr-pap.csv';
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-  return (
-    <button type="button" className="ghost" onClick={exportCsv}>
-      <Download size={18} /> Exportar leads
-    </button>
+          <motion.button
+            type="button"
+            className="thanks-reset"
+            onClick={reset}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.22 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            Voltar ao início
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    </Page>
   );
 }
 

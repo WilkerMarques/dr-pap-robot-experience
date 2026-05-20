@@ -17,6 +17,7 @@ import {
   UsersRound,
 } from 'lucide-react';
 import './styles.css';
+import './tablet-16-10.css';
 
 const AVATAR_SRC = '/dr-pap-avatar.png';
 const IDLE_RESET_SECONDS = 60;
@@ -361,16 +362,18 @@ function Idle({ onStart }) {
     <Page className="idle-page" onClick={onStart}>
       <div className="start-screen-stage">
         <div className="start-screen">
-          <div className="avatar-wrapper">
+          <motion.div className="avatar-wrapper">
             <img src={AVATAR_SRC} alt="Dr. PAP" draggable={false} />
+          </motion.div>
+          <div className="start-copy">
+            <p className="title-small">Olá, eu sou</p>
+            <h1 className="title-main">o Dr. PAP</h1>
+            <p className="subtitle">
+              Toque na tela para conhecer
+              <br />
+              nossas soluções hospitalares
+            </p>
           </div>
-          <p className="title-small">Olá, eu sou</p>
-          <h1 className="title-main">o Dr. PAP</h1>
-          <p className="subtitle">
-            Toque na tela para conhecer
-            <br />
-            nossas soluções hospitalares
-          </p>
           <button type="button" className="start-button" onClick={handleStart}>
             Começar
           </button>

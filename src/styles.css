@@ -12,8 +12,20 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --start-w: 1200px;
-  --start-h: 2000px;
+  --design-w: 1600;
+  --design-h: 1000;
+  --content-w: 1280;
+  --screen-pad-x: 80;
+  --screen-pad-y: 64;
+  --footer-btn-bottom: 56;
+  --footer-btn-h: 88;
+  --content-width: calc(var(--content-w) * 1px);
+  --pad-x: calc(var(--screen-pad-x) * 1px);
+  --pad-y: calc(var(--screen-pad-y) * 1px);
+  --footer-bottom: calc(var(--footer-btn-bottom) * 1px);
+  --footer-height: calc(var(--footer-btn-h) * 1px);
+  --start-w: calc(var(--design-w) * 1px);
+  --start-h: calc(var(--design-h) * 1px);
 }
 
 * {
@@ -308,7 +320,7 @@ textarea {
   left: 50%;
   bottom: 90px;
   transform: translateX(-50%);
-  width: 960px;
+  width: var(--content-width);
   height: 96px;
   border: none;
   border-radius: 22px;
@@ -425,7 +437,7 @@ textarea {
 }
 
 .quiz-progress {
-  width: 960px;
+  width: var(--content-width);
   height: 16px;
   margin: 20px auto 0;
   border-radius: 999px;
@@ -463,7 +475,7 @@ textarea {
 }
 
 .quiz-answers {
-  width: 960px;
+  width: var(--content-width);
   margin: 48px auto 0;
   display: grid;
   gap: 22px;
@@ -495,7 +507,7 @@ textarea {
   left: 50%;
   bottom: 90px;
   transform: translateX(-50%);
-  width: 960px;
+  width: var(--content-width);
   height: 96px;
   border: none;
   border-radius: 22px;
@@ -798,7 +810,7 @@ textarea {
 .result-main {
   position: relative;
   z-index: 2;
-  width: 960px;
+  width: var(--content-width);
   height: calc(100% - 96px);
   margin: 0 auto;
   display: flex;
@@ -986,7 +998,7 @@ textarea {
 .lead-header {
   position: relative;
   z-index: 2;
-  width: 960px;
+  width: var(--content-width);
   text-align: center;
   margin-bottom: 48px;
 }
@@ -1013,7 +1025,7 @@ textarea {
 .lead-form {
   position: relative;
   z-index: 2;
-  width: 960px;
+  width: var(--content-width);
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -1176,7 +1188,7 @@ textarea {
 .thanks-content {
   position: relative;
   z-index: 2;
-  width: 960px;
+  width: var(--content-width);
   height: calc(100% - 96px);
   margin: 0 auto;
   display: flex;
@@ -1277,7 +1289,7 @@ textarea {
   left: 50%;
   bottom: calc(24px + var(--safe-bottom));
   z-index: 30;
-  width: min(960px, calc(100% - 48px));
+  width: min(var(--content-width), calc(100% - 48px));
   transform: translateX(-50%);
   padding: 24px 28px;
   border-radius: 20px;

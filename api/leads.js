@@ -10,6 +10,20 @@ function getConnectionString() {
   );
 }
 
+function prepareConnectionString(raw) {
+  try {
+    const url = new URL(raw);
+    url.searchParams.delete('sslmode');
+    url.searchParams.delete('ssl');
+    return url.toString();
+  } catch {
+    return raw
+      .replace(/([?&])sslmode=[^&]*&?/gi, '$1')
+      .replace(/([?&])ssl=[^&]*&?/gi, '$1')
+      .replace(/[?&]$/, '');
+  }
+}
+
 async function readJsonBody(request) {
   if (request.body) {
     return typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
@@ -39,8 +53,11 @@ export default async function handler(request, response) {
   }
 
   const pool = new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
+    connectionString: prepareConnectionString(connectionString),
+    ssl: {
+      rejectUnauthorized: false,
+      checkServerIdentity: () => undefined,
+    },
     max: 1,
     connectionTimeoutMillis: 10000,
   });

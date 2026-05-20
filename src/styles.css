@@ -22,7 +22,10 @@
   --content-width: calc(var(--content-w) * 1px);
   --pad-x: calc(var(--screen-pad-x) * 1px);
   --pad-y: calc(var(--screen-pad-y) * 1px);
-  --footer-bottom: calc(var(--footer-btn-bottom) * 1px);
+  --footer-bottom: max(
+    calc(var(--footer-btn-bottom) * 1px),
+    calc(24px + env(safe-area-inset-bottom, 0px))
+  );
   --footer-height: calc(var(--footer-btn-h) * 1px);
   --start-w: calc(var(--design-w) * 1px);
   --start-h: calc(var(--design-h) * 1px);

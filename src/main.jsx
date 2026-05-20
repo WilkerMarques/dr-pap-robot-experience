@@ -362,18 +362,25 @@ function Idle({ onStart }) {
     <Page className="idle-page" onClick={onStart}>
       <div className="start-screen-stage">
         <div className="start-screen">
-          <motion.div className="avatar-wrapper">
-            <img src={AVATAR_SRC} alt="Dr. PAP" draggable={false} />
+          <motion.div
+            className="start-screen-body"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <motion.div className="avatar-wrapper">
+              <img src={AVATAR_SRC} alt="Dr. PAP" draggable={false} />
+            </motion.div>
+            <div className="start-copy">
+              <p className="title-small">Olá, eu sou</p>
+              <h1 className="title-main">o Dr. PAP</h1>
+              <p className="subtitle">
+                Toque na tela para conhecer
+                <br />
+                nossas soluções hospitalares
+              </p>
+            </div>
           </motion.div>
-          <div className="start-copy">
-            <p className="title-small">Olá, eu sou</p>
-            <h1 className="title-main">o Dr. PAP</h1>
-            <p className="subtitle">
-              Toque na tela para conhecer
-              <br />
-              nossas soluções hospitalares
-            </p>
-          </div>
           <button type="button" className="start-button" onClick={handleStart}>
             Começar
           </button>
@@ -447,7 +454,8 @@ function Quiz({ onBack, index, onAnswer }) {
             <span className="quiz-plus" aria-hidden>+</span>
           </header>
 
-          <p className="quiz-progress-label">
+          <div className="quiz-body">
+            <p className="quiz-progress-label">
             Pergunta {index + 1} de {quizQuestions.length}
           </p>
           <div className="quiz-progress">
@@ -468,6 +476,7 @@ function Quiz({ onBack, index, onAnswer }) {
                 {option.label}
               </button>
             ))}
+          </div>
           </div>
 
           <button

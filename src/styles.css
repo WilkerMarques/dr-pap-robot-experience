@@ -243,9 +243,7 @@ textarea {
 }
 
 .start-screen {
-  width: var(--start-w);
-  height: var(--start-h);
-  position: relative;
+position: relative;
   flex-shrink: 0;
   overflow: hidden;
   background:
@@ -254,15 +252,9 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: scale(min(100cqw / 1200, 100cqh / 2000));
-  transform-origin: center center;
 }
 
-@supports not (width: 1cqw) {
-  .start-screen {
-    transform: scale(min(calc(100vw / 1200), calc(100dvh / 2000)));
-  }
-}
+
 
 .avatar-wrapper {
   width: 480px;
@@ -353,24 +345,16 @@ textarea {
 }
 
 .quiz-screen {
-  width: var(--start-w);
-  height: var(--start-h);
-  position: relative;
+position: relative;
   flex-shrink: 0;
   overflow: hidden;
   background:
     url('/bg-tablet.png') center / cover no-repeat,
     linear-gradient(180deg, #9dccff 0%, #eaf4ff 48%, #f7fbff 100%);
-  transform: scale(min(100cqw / 1200, 100cqh / 2000));
-  transform-origin: center center;
-  padding: 72px 120px 0;
+padding: 72px 120px 0;
 }
 
-@supports not (width: 1cqw) {
-  .quiz-screen {
-    transform: scale(min(calc(100vw / 1200), calc(100dvh / 2000)));
-  }
-}
+
 
 .quiz-back {
   position: absolute;
@@ -773,24 +757,16 @@ textarea {
 }
 
 .result-screen {
-  width: var(--start-w);
-  height: var(--start-h);
-  position: relative;
+position: relative;
   flex-shrink: 0;
   overflow: hidden;
   background:
     url('/bg-tablet.png') center / cover no-repeat,
     linear-gradient(180deg, #9dccff 0%, #eaf4ff 48%, #f7fbff 100%);
-  transform: scale(min(100cqw / 1200, 100cqh / 2000));
-  transform-origin: center center;
-  padding: 88px 120px 90px;
+padding: 88px 120px 90px;
 }
 
-@supports not (width: 1cqw) {
-  .result-screen {
-    transform: scale(min(calc(100vw / 1200), calc(100dvh / 2000)));
-  }
-}
+
 
 .result-back {
   position: absolute;
@@ -958,27 +934,19 @@ textarea {
 }
 
 .lead-screen {
-  width: var(--start-w);
-  height: var(--start-h);
-  position: relative;
+position: relative;
   flex-shrink: 0;
   overflow: hidden;
   background:
     url('/bg-tablet.png') center / cover no-repeat,
     linear-gradient(180deg, #9dccff 0%, #eaf4ff 48%, #f7fbff 100%);
-  transform: scale(min(100cqw / 1200, 100cqh / 2000));
-  transform-origin: center center;
-  padding: 88px 120px 72px;
+padding: 88px 120px 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-@supports not (width: 1cqw) {
-  .lead-screen {
-    transform: scale(min(calc(100vw / 1200), calc(100dvh / 2000)));
-  }
-}
+
 
 .lead-back {
   position: absolute;
@@ -1166,24 +1134,16 @@ textarea {
 }
 
 .thanks-screen {
-  width: var(--start-w);
-  height: var(--start-h);
-  position: relative;
+position: relative;
   flex-shrink: 0;
   overflow: hidden;
   background:
     url('/bg-tablet.png') center / cover no-repeat,
     linear-gradient(180deg, #9dccff 0%, #eaf4ff 48%, #f7fbff 100%);
-  transform: scale(min(100cqw / 1200, 100cqh / 2000));
-  transform-origin: center center;
-  padding: 88px 120px 90px;
+padding: 88px 120px 90px;
 }
 
-@supports not (width: 1cqw) {
-  .thanks-screen {
-    transform: scale(min(calc(100vw / 1200), calc(100dvh / 2000)));
-  }
-}
+
 
 .thanks-content {
   position: relative;

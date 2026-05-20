@@ -20,8 +20,9 @@ import './styles.css';
 import './tablet-16-10.css';
 
 const AVATAR_SRC = '/dr-pap-avatar.png';
-const IDLE_RESET_SECONDS = 60;
-const IDLE_WARN_SECONDS = 15;
+const IDLE_RESET_SECONDS = 15;
+const IDLE_WARN_AFTER_SECONDS = 10;
+const IDLE_WARN_DURATION_SECONDS = 5;
 const THANKS_AUTO_RESET_SECONDS = 25;
 const EMPTY_LEAD = { nome: '', hospital: '', whatsapp: '' };
 
@@ -161,11 +162,15 @@ function App() {
     return () => clearTimeout(timer);
   }, [screen]);
 
-  const idleSecondsLeft = useMemo(() => {
-    if (screen === screens.idle || screen === screens.thanks) return IDLE_RESET_SECONDS;
-    const inactiveSeconds = (Date.now() - lastInteraction) / 1000;
-    return Math.max(0, Math.ceil(IDLE_RESET_SECONDS - inactiveSeconds));
+  const inactiveSeconds = useMemo(() => {
+    if (screen === screens.idle || screen === screens.thanks) return 0;
+    return (Date.now() - lastInteraction) / 1000;
   }, [lastInteraction, screen, clockTick]);
+
+  const idleSecondsLeft = useMemo(() => {
+    if (screen === screens.idle || screen === screens.thanks) return IDLE_WARN_DURATION_SECONDS;
+    return Math.max(0, Math.ceil(IDLE_RESET_SECONDS - inactiveSeconds));
+  }, [inactiveSeconds, screen]);
 
   const thanksSecondsLeft = useMemo(() => {
     if (!thanksStartedAt) return THANKS_AUTO_RESET_SECONDS;
@@ -175,7 +180,7 @@ function App() {
 
   const showIdleWarning = screen !== screens.idle
     && screen !== screens.thanks
-    && idleSecondsLeft <= IDLE_WARN_SECONDS;
+    && inactiveSeconds >= IDLE_WARN_AFTER_SECONDS;
 
   const score = useMemo(() => answers.reduce((acc, item) => acc + item.score, 0), [answers]);
   const maxScore = quizQuestions.length * 3;
@@ -233,26 +238,13 @@ function App() {
   return (
     <main className="tablet-app" onPointerDown={touch}>
       <motion.div className="tablet-viewport">
-        {screen !== screens.idle && (
-          <button
-            type="button"
-            className="kiosk-exit"
-            onClick={(event) => {
-              event.stopPropagation();
-              reset();
-            }}
-          >
-            Sair
-          </button>
-        )}
-
         <AnimatePresence>
           {showIdleWarning && (
-            <SessionTimeoutBanner
+            <SessionTimeoutOverlay
               key="idle-warning"
               secondsLeft={idleSecondsLeft}
+              totalSeconds={IDLE_WARN_DURATION_SECONDS}
               onContinue={touch}
-              onExit={reset}
             />
           )}
         </AnimatePresence>
@@ -286,27 +278,54 @@ function App() {
   );
 }
 
-function SessionTimeoutBanner({ secondsLeft, onContinue, onExit }) {
+function SessionTimeoutOverlay({ secondsLeft, totalSeconds, onContinue }) {
+  const progress = Math.min(100, Math.max(0, (secondsLeft / totalSeconds) * 100));
+
   return (
     <motion.div
-      className="session-timeout"
+      className="session-timeout-overlay"
       role="alertdialog"
+      aria-modal="true"
       aria-live="assertive"
       aria-label="Sessão expirando"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 16 }}
-      onPointerDown={(event) => event.stopPropagation()}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        if (event.target === event.currentTarget) onContinue();
+      }}
     >
-      <p className="session-timeout-text">
-        Sem interação. Voltando ao início em <strong>{secondsLeft}s</strong>
-      </p>
-      <motion.div className="session-timeout-actions">
+      <motion.div
+        className="session-timeout-card"
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 8 }}
+        transition={{ duration: 0.25 }}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <p className="session-timeout-eyebrow">Você ainda está aí?</p>
+        <p className="session-timeout-count" aria-live="polite">
+          {secondsLeft}
+        </p>
+        <p className="session-timeout-label">segundos para voltar ao início</p>
+        <div
+          className="session-timeout-bar"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={totalSeconds}
+          aria-valuenow={secondsLeft}
+        >
+          <motion.div
+            className="session-timeout-bar-fill"
+            initial={false}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+          />
+        </div>
         <button type="button" className="session-timeout-continue" onClick={onContinue}>
           Continuar
-        </button>
-        <button type="button" className="session-timeout-exit" onClick={onExit}>
-          Sair agora
         </button>
       </motion.div>
     </motion.div>
@@ -443,16 +462,18 @@ function Quiz({ onBack, index, onAnswer }) {
     <Page className="quiz-page">
       <div className="quiz-screen-stage">
         <div className="quiz-screen">
-          <button type="button" className="quiz-back" onClick={onBack} aria-label="Voltar">
-            <ArrowLeft size={32} />
-          </button>
-          <header className="quiz-header">
-            <Avatar size="quiz" />
-            <div className="quiz-header-text">
-              <h1 className="quiz-heading">Diagnóstico rápido do seu hospital</h1>
-            </div>
-            <span className="quiz-plus" aria-hidden>+</span>
-          </header>
+          <div className="screen-toolbar">
+            <button type="button" className="screen-back quiz-back" onClick={onBack} aria-label="Voltar">
+              <ArrowLeft size={32} />
+            </button>
+            <header className="quiz-header">
+              <Avatar size="quiz" />
+              <div className="quiz-header-text">
+                <h1 className="quiz-heading">Diagnóstico rápido do seu hospital</h1>
+              </div>
+              <span className="quiz-plus" aria-hidden>+</span>
+            </header>
+          </div>
 
           <div className="quiz-body">
             <p className="quiz-progress-label">
@@ -508,9 +529,11 @@ function Result({ percentage, onBack, onLead }) {
         transition={{ duration: 0.28 }}
       >
         <div className="result-screen">
-          <button type="button" className="result-back" onClick={onBack} aria-label="Voltar">
-            <ArrowLeft size={32} />
-          </button>
+          <div className="screen-toolbar screen-toolbar--compact">
+            <button type="button" className="screen-back result-back" onClick={onBack} aria-label="Voltar">
+              <ArrowLeft size={32} />
+            </button>
+          </div>
 
           <motion.div className="result-main">
             <motion.div
@@ -602,16 +625,17 @@ function Lead({
     <Page className="lead-page">
       <div className="lead-screen-stage">
         <div className="lead-screen">
-          <button type="button" className="lead-back" onClick={onBack} aria-label="Voltar">
-            <ArrowLeft size={32} />
-          </button>
-
-          <header className="lead-header">
-            <h1 className="lead-title">Receba uma demonstração</h1>
-            <p className="lead-subtitle">
-              Preencha seus dados para agendarmos uma conversa personalizada.
-            </p>
-          </header>
+          <div className="screen-toolbar screen-toolbar--lead">
+            <button type="button" className="screen-back lead-back" onClick={onBack} aria-label="Voltar">
+              <ArrowLeft size={32} />
+            </button>
+            <header className="lead-header">
+              <h1 className="lead-title">Receba uma demonstração</h1>
+              <p className="lead-subtitle">
+                Preencha seus dados para agendarmos uma conversa personalizada.
+              </p>
+            </header>
+          </div>
 
           <form className="lead-form" onSubmit={handleSubmit} noValidate>
             <label className="lead-field">

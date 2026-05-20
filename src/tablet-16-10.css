@@ -3,12 +3,12 @@
     --content-w: 92;
     --screen-pad-x: 5;
     --screen-pad-y: 4;
-    --footer-btn-bottom: 5;
+    --footer-btn-bottom: 8;
     --footer-btn-h: 7.5;
     --content-width: min(92cqw, 880px);
     --pad-x: max(16px, 5cqw);
     --pad-y: max(12px, 4cqh);
-    --footer-bottom: max(28px, calc(5cqh + env(safe-area-inset-bottom, 0px)));
+    --footer-bottom: max(44px, calc(8cqh + env(safe-area-inset-bottom, 0px)));
     --footer-height: clamp(64px, 7.5cqh, 96px);
   }
 }
@@ -18,12 +18,12 @@
     --content-w: 90;
     --screen-pad-x: 5;
     --screen-pad-y: 4;
-    --footer-btn-bottom: 5;
+    --footer-btn-bottom: 8;
     --footer-btn-h: 10;
     --content-width: min(90cqw, 1280px);
     --pad-x: max(20px, 5cqw);
     --pad-y: max(12px, 4cqh);
-    --footer-bottom: max(24px, calc(4.5cqh + env(safe-area-inset-bottom, 0px)));
+    --footer-bottom: max(40px, calc(7cqh + env(safe-area-inset-bottom, 0px)));
     --footer-height: clamp(56px, 10cqh, 88px);
   }
 }
@@ -68,7 +68,7 @@
   display: flex;
   flex-direction: column;
   padding: var(--pad-y) var(--pad-x);
-  padding-bottom: calc(var(--footer-bottom) + var(--footer-height) + 20px);
+  padding-bottom: calc(var(--footer-bottom) + var(--footer-height) + 28px);
 }
 
 .start-screen {

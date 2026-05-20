@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "generate:icons": "node scripts/generate-pwa-icons.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",

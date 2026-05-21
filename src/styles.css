@@ -1419,19 +1419,137 @@ padding: 88px 120px 90px;
 
 
 
-.thanks-content {
+.thanks-body {
   position: relative;
   z-index: 2;
-  width: var(--content-width);
-  height: calc(100% - 96px);
+  width: min(var(--content-width), 100%);
+  flex: 1;
+  min-height: 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(28px, 4cqh, 48px);
+  padding: 0 24px 24px;
+}
+
+.thanks-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(16px, 2.5cqh, 28px);
+}
+
+.thanks-social {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.thanks-social-card {
+  width: min(100%, 520px);
+  padding: clamp(24px, 3.5cqh, 36px);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow:
+    0 24px 48px rgba(18, 52, 90, 0.12),
+    0 0 0 1px rgba(18, 52, 90, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(16px, 2.5cqh, 24px);
+}
+
+.thanks-social-card::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin: calc(-1 * clamp(24px, 3.5cqh, 36px)) calc(-1 * clamp(24px, 3.5cqh, 36px)) 0;
+  margin-bottom: clamp(12px, 2cqh, 20px);
+  border-radius: 28px 28px 0 0;
+  background: linear-gradient(90deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.thanks-social-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  text-align: left;
+}
+
+.thanks-social-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  gap: 36px;
-  padding: 0 24px 120px;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #f09433 0%, #e6683c 35%, #dc2743 65%, #bc1888 100%);
+  box-shadow: 0 12px 28px rgba(220, 39, 67, 0.28);
+}
+
+.thanks-social-card-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.thanks-social-heading {
+  margin: 0;
+  padding: 0;
+  font-size: clamp(26px, 4.2cqw, 38px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #12345a;
+  letter-spacing: -0.02em;
+}
+
+.thanks-social-subheading {
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: clamp(18px, 2.8cqw, 26px);
+  font-weight: 500;
+  line-height: 1.35;
+  color: #5c6b82;
+}
+
+.thanks-qr-wrap {
+  padding: clamp(14px, 2cqh, 20px);
+  border-radius: 20px;
+  background: #f7fbff;
+  border: 2px solid #d8e8f8;
+  line-height: 0;
+}
+
+.thanks-qr-wrap svg {
+  display: block;
+  width: min(72vw, 280px);
+  height: auto;
+  max-width: 280px;
+}
+
+.thanks-social-handle {
+  margin: 0;
+  padding: 0;
+  font-size: clamp(24px, 4cqw, 34px);
+  font-weight: 800;
+  color: #006fe6;
+  letter-spacing: -0.01em;
+}
+
+.thanks-social-hint {
+  margin: -8px 0 0;
+  padding: 0;
+  font-size: clamp(17px, 2.6cqw, 24px);
+  font-weight: 600;
+  color: #6b7a8f;
+  line-height: 1.35;
 }
 
 .thanks-icon {
@@ -1449,7 +1567,7 @@ padding: 88px 120px 90px;
 .thanks-title {
   margin: 0;
   padding: 0;
-  font-size: 80px;
+  font-size: clamp(48px, 8cqw, 80px);
   line-height: 1.05;
   font-weight: 800;
   color: #12345a;
@@ -1459,10 +1577,10 @@ padding: 88px 120px 90px;
 .thanks-message {
   margin: 0;
   padding: 0;
-  max-width: 860px;
-  font-size: 36px;
+  max-width: 640px;
+  font-size: clamp(22px, 3.6cqw, 34px);
   font-weight: 500;
-  line-height: 1.45;
+  line-height: 1.4;
   color: #5c6b82;
 }
 

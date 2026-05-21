@@ -24,6 +24,7 @@ import {
   formatNationalPhone,
 } from './phoneCountries.js';
 import { LeadWhatsappField, validateLeadWhatsapp } from './LeadWhatsappField.jsx';
+import { ThanksSocialFollow } from './ThanksSocialFollow.jsx';
 
 const AVATAR_SRC = '/dr-pap-avatar.png';
 const IDLE_WARN_AFTER_SECONDS = 15;
@@ -47,6 +48,12 @@ const screens = {
   lead: 'lead',
   thanks: 'thanks',
 };
+
+function getDevPreviewScreen() {
+  if (!import.meta.env.DEV) return null;
+  const screenParam = new URLSearchParams(window.location.search).get('screen');
+  return Object.values(screens).includes(screenParam) ? screenParam : null;
+}
 
 const quizQuestions = [
   {
@@ -103,7 +110,9 @@ const profiles = [
 ];
 
 function App() {
-  const [screen, setScreen] = useState(screens.idle);
+  const devPreviewScreen = getDevPreviewScreen();
+  const isThanksPreview = devPreviewScreen === screens.thanks;
+  const [screen, setScreen] = useState(devPreviewScreen ?? screens.idle);
   const [history, setHistory] = useState([]);
   const [quizIndex, setQuizIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -176,9 +185,10 @@ function App() {
   useEffect(() => {
     if (screen !== screens.thanks) return undefined;
     setThanksStartedAt(Date.now());
+    if (isThanksPreview) return undefined;
     const timer = setTimeout(reset, THANKS_AUTO_RESET_SECONDS * 1000);
     return () => clearTimeout(timer);
-  }, [screen]);
+  }, [screen, isThanksPreview]);
 
   const inactiveSeconds = useMemo(() => {
     if (screen === screens.idle || screen === screens.thanks) return 0;
@@ -278,7 +288,11 @@ function App() {
             />
           )}
           {screen === screens.thanks && (
-            <Thanks key="thanks" reset={reset} autoReturnSeconds={thanksSecondsLeft} />
+            <Thanks
+              key="thanks"
+              reset={reset}
+              autoReturnSeconds={isThanksPreview ? null : thanksSecondsLeft}
+            />
           )}
         </AnimatePresence>
       </motion.div>
@@ -757,27 +771,33 @@ function Thanks({ reset, autoReturnSeconds }) {
       >
         <motion.div className="thanks-screen">
           <motion.div
-            className="thanks-content"
+            className="thanks-body"
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.08 }}
           >
-            <motion.div
-              className="thanks-icon"
-              aria-hidden
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.45, delay: 0.12 }}
-            >
-              <CheckCircle2 size={72} strokeWidth={2.25} />
-            </motion.div>
-            <h1 className="thanks-title">Obrigado!</h1>
-            <p className="thanks-message">
-              Seu contato foi registrado. Nossa equipe vai chamar você para uma demonstração.
-            </p>
-            <p className="thanks-auto-return">
-              Voltando ao início em {autoReturnSeconds}s
-            </p>
+            <div className="thanks-confirm">
+              <motion.div
+                className="thanks-icon"
+                aria-hidden
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.45, delay: 0.12 }}
+              >
+                <CheckCircle2 size={64} strokeWidth={2.25} />
+              </motion.div>
+              <h1 className="thanks-title">Obrigado!</h1>
+              <p className="thanks-message">
+                Seu contato foi registrado. Em breve nossa equipe entra em contato para a demonstração.
+              </p>
+              {autoReturnSeconds != null && (
+                <p className="thanks-auto-return">
+                  Voltando ao início em {autoReturnSeconds}s
+                </p>
+              )}
+            </div>
+
+            <ThanksSocialFollow />
           </motion.div>
 
           <motion.button

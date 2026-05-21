@@ -175,7 +175,7 @@
 .lead-header,
 .lead-form,
 .result-main,
-.thanks-content {
+.thanks-body {
   width: 100%;
   max-width: var(--content-width);
   margin-left: auto;
@@ -274,7 +274,7 @@
 }
 
 .result-main,
-.thanks-content {
+.thanks-body {
   flex: 1;
   min-height: 0;
   height: auto;
@@ -482,6 +482,31 @@
   .lead-submit-error,
   .lead-submit {
     grid-column: 1 / -1;
+  }
+
+  .thanks-body {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(20px, 3.5cqw, 48px);
+    max-width: none;
+    width: 100%;
+  }
+
+  .thanks-confirm {
+    flex: 1;
+    min-width: 0;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .thanks-social {
+    flex: 0 0 min(42cqw, 480px);
+    justify-content: flex-end;
+  }
+
+  .thanks-social-card {
+    width: 100%;
   }
 }
 

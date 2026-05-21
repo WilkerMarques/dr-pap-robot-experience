@@ -314,7 +314,7 @@ position: relative;
 .start-button {
   position: absolute;
   left: 50%;
-  bottom: 80px;
+  bottom: 70px;
   transform: translateX(-50%);
   width: var(--content-width);
   height: 96px;

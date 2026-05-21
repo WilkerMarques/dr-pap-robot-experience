@@ -125,7 +125,7 @@
   left: auto;
   right: auto;
   bottom: auto;
-  transform: translateY(20px);
+  transform: translateY(35px);
   flex-shrink: 0;
   width: 100%;
   max-width: var(--content-width);

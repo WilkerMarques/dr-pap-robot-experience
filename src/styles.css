@@ -1428,10 +1428,11 @@ padding: 88px 120px 90px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
-  gap: clamp(28px, 4cqh, 48px);
-  padding: 0 24px 24px;
+  gap: clamp(12px, 2cqh, 28px);
+  padding: 0;
+  overflow: hidden;
 }
 
 .thanks-confirm {
@@ -1443,125 +1444,153 @@ padding: 88px 120px 90px;
 }
 
 .thanks-social {
+  flex: 1;
+  min-height: 0;
   display: flex;
+  align-items: center;
   justify-content: center;
   width: 100%;
 }
 
 .thanks-social-card {
-  width: min(100%, 520px);
-  padding: clamp(24px, 3.5cqh, 36px);
-  border-radius: 28px;
+  width: min(100%, 480px);
+  max-height: 100%;
+  padding: clamp(16px, 2.4cqh, 26px) clamp(18px, 3.5cqw, 28px);
+  border-radius: 24px;
   background: #ffffff;
-  box-shadow:
-    0 24px 48px rgba(18, 52, 90, 0.12),
-    0 0 0 1px rgba(18, 52, 90, 0.06);
+  border: 1px solid rgba(18, 52, 90, 0.08);
+  box-shadow: 0 20px 40px rgba(18, 52, 90, 0.1);
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  row-gap: clamp(10px, 1.6cqh, 16px);
+}
+
+.thanks-social-head {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: clamp(16px, 2.5cqh, 24px);
-}
-
-.thanks-social-card::before {
-  content: '';
-  display: block;
+  gap: clamp(8px, 1.2cqh, 12px);
   width: 100%;
-  height: 6px;
-  margin: calc(-1 * clamp(24px, 3.5cqh, 36px)) calc(-1 * clamp(24px, 3.5cqh, 36px)) 0;
-  margin-bottom: clamp(12px, 2cqh, 20px);
-  border-radius: 28px 28px 0 0;
-  background: linear-gradient(90deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-}
-
-.thanks-social-card-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  text-align: left;
 }
 
 .thanks-social-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+  width: clamp(52px, 10cqw, 72px);
+  height: clamp(52px, 10cqw, 72px);
+  border-radius: 20px;
   color: #ffffff;
   background: linear-gradient(135deg, #f09433 0%, #e6683c 35%, #dc2743 65%, #bc1888 100%);
-  box-shadow: 0 12px 28px rgba(220, 39, 67, 0.28);
+  box-shadow: 0 8px 20px rgba(220, 39, 67, 0.2);
 }
 
-.thanks-social-card-copy {
-  flex: 1;
-  min-width: 0;
+.thanks-social-icon svg {
+  width: 58%;
+  height: 58%;
 }
 
 .thanks-social-heading {
   margin: 0;
   padding: 0;
-  font-size: clamp(26px, 4.2cqw, 38px);
+  max-width: 16ch;
+  font-size: clamp(22px, 4cqw, 32px);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
   color: #12345a;
   letter-spacing: -0.02em;
 }
 
 .thanks-social-subheading {
-  margin: 6px 0 0;
+  margin: 0;
   padding: 0;
-  font-size: clamp(18px, 2.8cqw, 26px);
+  max-width: 22ch;
+  font-size: clamp(15px, 2.4cqw, 20px);
   font-weight: 500;
   line-height: 1.35;
   color: #5c6b82;
 }
 
+.thanks-social-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 1.5cqh, 14px);
+  width: 100%;
+}
+
+.thanks-social-scan {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #eaf4ff;
+  color: #0b63ce;
+  font-size: clamp(14px, 2.4cqw, 18px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .thanks-qr-wrap {
-  padding: clamp(14px, 2cqh, 20px);
-  border-radius: 20px;
-  background: #f7fbff;
-  border: 2px solid #d8e8f8;
+  width: min(52cqw, 24cqh, 200px);
+  padding: clamp(12px, 1.8cqh, 18px);
+  border-radius: 18px;
+  background: #ffffff;
+  border: 2px solid #c5dcf5;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
   line-height: 0;
 }
 
 .thanks-qr-wrap svg {
   display: block;
-  width: min(72vw, 280px);
+  width: 100%;
   height: auto;
-  max-width: 280px;
+  max-width: 100%;
+}
+
+.thanks-social-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-top: clamp(6px, 1cqh, 10px);
+  border-top: 1px solid #e3edf8;
 }
 
 .thanks-social-handle {
   margin: 0;
-  padding: 0;
-  font-size: clamp(24px, 4cqw, 34px);
+  padding: 6px 18px;
+  border-radius: 12px;
+  background: #f0f7ff;
+  font-size: clamp(20px, 3.6cqw, 28px);
   font-weight: 800;
   color: #006fe6;
   letter-spacing: -0.01em;
-}
-
-.thanks-social-hint {
-  margin: -8px 0 0;
-  padding: 0;
-  font-size: clamp(17px, 2.6cqw, 24px);
-  font-weight: 600;
-  color: #6b7a8f;
-  line-height: 1.35;
+  line-height: 1.2;
 }
 
 .thanks-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 140px;
-  height: 140px;
+  width: min(18cqw, 12cqh, 96px);
+  height: min(18cqw, 12cqh, 96px);
   border-radius: 50%;
   background: #e8f9f1;
   color: #11a76f;
   box-shadow: 0 16px 40px rgba(17, 167, 111, 0.18);
+  flex-shrink: 0;
+}
+
+.thanks-icon svg {
+  width: 58%;
+  height: 58%;
 }
 
 .thanks-title {

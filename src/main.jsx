@@ -784,7 +784,7 @@ function Thanks({ reset, autoReturnSeconds }) {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.45, delay: 0.12 }}
               >
-                <CheckCircle2 size={64} strokeWidth={2.25} />
+                <CheckCircle2 strokeWidth={2.25} />
               </motion.div>
               <h1 className="thanks-title">Obrigado!</h1>
               <p className="thanks-message">

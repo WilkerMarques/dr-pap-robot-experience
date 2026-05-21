@@ -316,9 +316,40 @@
   font-size: clamp(16px, 2.8cqw, 28px);
 }
 
-.lead-field input {
+.lead-field input,
+.lead-phone-prefix,
+.lead-phone-input {
   min-height: clamp(56px, 8cqh, 88px);
   font-size: clamp(18px, 3.2cqw, 30px);
+}
+
+.lead-phone-prefix {
+  padding: 0 clamp(12px, 2.5cqw, 20px);
+  font-size: clamp(20px, 3cqw, 28px);
+}
+
+.lead-phone-preview {
+  font-size: clamp(14px, 2.4cqw, 22px);
+}
+
+.lead-phone-link {
+  font-size: clamp(16px, 2.6cqw, 24px);
+}
+
+.country-sheet-title {
+  font-size: clamp(22px, 3.5cqw, 28px);
+}
+
+.country-sheet-search input {
+  font-size: clamp(18px, 3cqw, 24px);
+}
+
+.country-sheet-option {
+  min-height: clamp(60px, 8cqh, 68px);
+}
+
+.country-sheet-option-name {
+  font-size: clamp(18px, 3cqw, 24px);
 }
 
 .lead-submit {

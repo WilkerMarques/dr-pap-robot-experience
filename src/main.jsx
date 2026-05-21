@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -18,24 +18,25 @@ import {
 } from 'lucide-react';
 import './styles.css';
 import './tablet-16-10.css';
+import {
+  buildFullWhatsappDigits,
+  DEFAULT_PHONE_COUNTRY,
+  formatNationalPhone,
+} from './phoneCountries.js';
+import { LeadWhatsappField, validateLeadWhatsapp } from './LeadWhatsappField.jsx';
 
 const AVATAR_SRC = '/dr-pap-avatar.png';
-const IDLE_RESET_SECONDS = 15;
-const IDLE_WARN_AFTER_SECONDS = 10;
+const IDLE_WARN_AFTER_SECONDS = 15;
 const IDLE_WARN_DURATION_SECONDS = 5;
-const THANKS_AUTO_RESET_SECONDS = 25;
-const EMPTY_LEAD = { nome: '', hospital: '', whatsapp: '' };
-
-function formatWhatsappInput(value) {
-  const digits = value.replace(/\D/g, '').slice(0, 11);
-  if (digits.length === 0) return '';
-  if (digits.length <= 2) return `(${digits}`;
-  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  if (digits.length <= 10) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+const IDLE_RESET_SECONDS = IDLE_WARN_AFTER_SECONDS + IDLE_WARN_DURATION_SECONDS;
+function shouldShowIdleWarning(screen, inactiveSeconds) {
+  if (screen === screens.idle || screen === screens.thanks) {
+    return false;
   }
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  return inactiveSeconds >= IDLE_WARN_AFTER_SECONDS;
 }
+const THANKS_AUTO_RESET_SECONDS = 25;
+const EMPTY_LEAD = { nome: '', hospital: '', whatsapp: '', phoneCountry: DEFAULT_PHONE_COUNTRY };
 
 const screens = {
   idle: 'idle',
@@ -109,14 +110,23 @@ function App() {
   const [lead, setLead] = useState({ ...EMPTY_LEAD });
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadSubmitError, setLeadSubmitError] = useState('');
-  const [lastInteraction, setLastInteraction] = useState(Date.now());
-  const [clockTick, setClockTick] = useState(0);
+  const lastInteractionRef = useRef(Date.now());
+  const [idleTick, setIdleTick] = useState(0);
   const [thanksStartedAt, setThanksStartedAt] = useState(null);
+
+  const markInteraction = () => {
+    lastInteractionRef.current = Date.now();
+    setIdleTick((value) => value + 1);
+  };
+
+  const markInteractionSilent = () => {
+    lastInteractionRef.current = Date.now();
+  };
 
   const go = (next) => {
     setHistory((prev) => [...prev, screen]);
     setScreen(next);
-    setLastInteraction(Date.now());
+    markInteraction();
   };
 
   const back = () => {
@@ -126,7 +136,7 @@ function App() {
       setScreen(previous);
       return copy;
     });
-    setLastInteraction(Date.now());
+    markInteraction();
   };
 
   const reset = () => {
@@ -138,22 +148,30 @@ function App() {
     setLeadSubmitError('');
     setLeadSubmitting(false);
     setThanksStartedAt(null);
-    setLastInteraction(Date.now());
+    markInteraction();
   };
 
-  const touch = () => setLastInteraction(Date.now());
+  const touch = () => markInteraction();
 
   useEffect(() => {
-    const timer = setInterval(() => setClockTick((value) => value + 1), 1000);
-    return () => clearInterval(timer);
+    const options = { capture: true, passive: true };
+    document.addEventListener('input', markInteractionSilent, options);
+    document.addEventListener('focusin', markInteractionSilent, options);
+    return () => {
+      document.removeEventListener('input', markInteractionSilent, options);
+      document.removeEventListener('focusin', markInteractionSilent, options);
+    };
   }, []);
 
   useEffect(() => {
-    if (screen === screens.idle || screen === screens.thanks) return undefined;
-    const inactiveSeconds = (Date.now() - lastInteraction) / 1000;
-    if (inactiveSeconds >= IDLE_RESET_SECONDS) reset();
-    return undefined;
-  }, [lastInteraction, screen, clockTick]);
+    const timer = setInterval(() => {
+      setIdleTick((value) => value + 1);
+      if (screen === screens.idle || screen === screens.thanks) return;
+      const inactiveSeconds = (Date.now() - lastInteractionRef.current) / 1000;
+      if (inactiveSeconds >= IDLE_RESET_SECONDS) reset();
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [screen]);
 
   useEffect(() => {
     if (screen !== screens.thanks) return undefined;
@@ -164,23 +182,16 @@ function App() {
 
   const inactiveSeconds = useMemo(() => {
     if (screen === screens.idle || screen === screens.thanks) return 0;
-    return (Date.now() - lastInteraction) / 1000;
-  }, [lastInteraction, screen, clockTick]);
-
-  const idleSecondsLeft = useMemo(() => {
-    if (screen === screens.idle || screen === screens.thanks) return IDLE_WARN_DURATION_SECONDS;
-    return Math.max(0, Math.ceil(IDLE_RESET_SECONDS - inactiveSeconds));
-  }, [inactiveSeconds, screen]);
+    return (Date.now() - lastInteractionRef.current) / 1000;
+  }, [screen, idleTick]);
 
   const thanksSecondsLeft = useMemo(() => {
     if (!thanksStartedAt) return THANKS_AUTO_RESET_SECONDS;
     const elapsed = (Date.now() - thanksStartedAt) / 1000;
     return Math.max(0, Math.ceil(THANKS_AUTO_RESET_SECONDS - elapsed));
-  }, [thanksStartedAt, clockTick]);
+  }, [thanksStartedAt, idleTick]);
 
-  const showIdleWarning = screen !== screens.idle
-    && screen !== screens.thanks
-    && inactiveSeconds >= IDLE_WARN_AFTER_SECONDS;
+  const showIdleWarning = shouldShowIdleWarning(screen, inactiveSeconds);
 
   const score = useMemo(() => answers.reduce((acc, item) => acc + item.score, 0), [answers]);
   const maxScore = quizQuestions.length * 3;
@@ -194,13 +205,13 @@ function App() {
     } else {
       setQuizIndex((current) => current + 1);
     }
-    setLastInteraction(Date.now());
+    markInteractionSilent();
   };
 
   const submitLead = async (event) => {
     event.preventDefault();
-    const whatsappDigits = lead.whatsapp.replace(/\D/g, '');
-    if (whatsappDigits.length < 10) return;
+    const whatsappDigits = buildFullWhatsappDigits(lead.phoneCountry, lead.whatsapp);
+    if (!whatsappDigits) return;
 
     setLeadSubmitting(true);
     setLeadSubmitError('');
@@ -236,18 +247,15 @@ function App() {
   };
 
   return (
-    <main className="tablet-app" onPointerDown={touch}>
+    <main className="tablet-app" onPointerDown={markInteractionSilent}>
       <motion.div className="tablet-viewport">
-        <AnimatePresence>
-          {showIdleWarning && (
-            <SessionTimeoutOverlay
-              key="idle-warning"
-              secondsLeft={idleSecondsLeft}
-              totalSeconds={IDLE_WARN_DURATION_SECONDS}
-              onContinue={touch}
-            />
-          )}
-        </AnimatePresence>
+        {showIdleWarning && (
+          <SessionTimeoutOverlay
+            key="idle-warning"
+            lastInteractionRef={lastInteractionRef}
+            onContinue={touch}
+          />
+        )}
 
         <AnimatePresence mode="wait">
           {screen === screens.idle && <Idle key="idle" onStart={startQuiz} />}
@@ -278,8 +286,28 @@ function App() {
   );
 }
 
-function SessionTimeoutOverlay({ secondsLeft, totalSeconds, onContinue }) {
-  const progress = Math.min(100, Math.max(0, (secondsLeft / totalSeconds) * 100));
+function SessionTimeoutOverlay({ lastInteractionRef, onContinue }) {
+  const [secondsLeft, setSecondsLeft] = useState(IDLE_WARN_DURATION_SECONDS);
+  const [fillPercent, setFillPercent] = useState(100);
+
+  useEffect(() => {
+    let frameId = 0;
+    const update = () => {
+      const inactiveSeconds = (Date.now() - lastInteractionRef.current) / 1000;
+      const secondsRemaining = Math.max(0, IDLE_RESET_SECONDS - inactiveSeconds);
+      const fillRatio = Math.max(
+        0,
+        Math.min(1, secondsRemaining / IDLE_WARN_DURATION_SECONDS),
+      );
+      setSecondsLeft(Math.max(0, Math.ceil(secondsRemaining)));
+      setFillPercent(fillRatio * 100);
+      if (secondsRemaining > 0) {
+        frameId = requestAnimationFrame(update);
+      }
+    };
+    frameId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(frameId);
+  }, [lastInteractionRef]);
 
   return (
     <motion.div
@@ -314,14 +342,12 @@ function SessionTimeoutOverlay({ secondsLeft, totalSeconds, onContinue }) {
           className="session-timeout-bar"
           role="progressbar"
           aria-valuemin={0}
-          aria-valuemax={totalSeconds}
+          aria-valuemax={IDLE_WARN_DURATION_SECONDS}
           aria-valuenow={secondsLeft}
         >
-          <motion.div
+          <div
             className="session-timeout-bar-fill"
-            initial={false}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            style={{ width: `${fillPercent}%` }}
           />
         </div>
         <button type="button" className="session-timeout-continue" onClick={onContinue}>
@@ -333,6 +359,16 @@ function SessionTimeoutOverlay({ secondsLeft, totalSeconds, onContinue }) {
 }
 
 function Page({ children, className = '', onClick }) {
+  const isStaticPage = className.includes('lead-page');
+
+  if (isStaticPage) {
+    return (
+      <section className={`page ${className}`}>
+        {children}
+      </section>
+    );
+  }
+
   return (
     <motion.section
       className={`page ${className}`}
@@ -600,19 +636,19 @@ function Lead({
   const update = (field) => (event) => {
     onClearSubmitError();
     const raw = event.target.value;
-    const value = field === 'whatsapp' ? raw : raw.toUpperCase();
-    setLead((prev) => ({ ...prev, [field]: value }));
+    setLead((prev) => ({ ...prev, [field]: raw.toUpperCase() }));
   };
 
-  const handleWhatsappChange = (event) => {
-    setWhatsappError(false);
-    onClearSubmitError();
-    setLead((prev) => ({ ...prev, whatsapp: formatWhatsappInput(event.target.value) }));
+  const handleCountryChange = (iso) => {
+    setLead((prev) => ({
+      ...prev,
+      phoneCountry: iso,
+      whatsapp: formatNationalPhone(iso, prev.whatsapp),
+    }));
   };
 
   const handleSubmit = (event) => {
-    const whatsappDigits = lead.whatsapp.replace(/\D/g, '');
-    if (whatsappDigits.length < 10) {
+    if (!validateLeadWhatsapp(lead.phoneCountry, lead.whatsapp)) {
       event.preventDefault();
       setWhatsappError(true);
       return;
@@ -637,7 +673,14 @@ function Lead({
             </header>
           </div>
 
-          <form className="lead-form" onSubmit={handleSubmit} noValidate>
+          <form
+            className="lead-form"
+            onSubmit={handleSubmit}
+            noValidate
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
             <label className="lead-field">
               <span className="lead-label">Nome</span>
               <input
@@ -664,23 +707,22 @@ function Lead({
               />
             </label>
 
-            <label className={`lead-field${whatsappError ? ' lead-field--error' : ''}`}>
-              <span className="lead-label">WhatsApp</span>
-              <input
-                type="tel"
-                name="whatsapp"
-                autoComplete="tel"
-                inputMode="numeric"
-                placeholder="(00) 00000-0000"
-                value={lead.whatsapp}
-                onChange={handleWhatsappChange}
-                aria-invalid={whatsappError}
-                required
+            <div className={`lead-field${whatsappError ? ' lead-field--error' : ''}`}>
+              <span className="lead-label" id="lead-whatsapp-label">
+                WhatsApp
+              </span>
+              <LeadWhatsappField
+                phoneCountry={lead.phoneCountry}
+                whatsapp={lead.whatsapp}
+                hasError={whatsappError}
+                onCountryChange={handleCountryChange}
+                onWhatsappChange={(value) => setLead((prev) => ({ ...prev, whatsapp: value }))}
+                onClearError={() => {
+                  setWhatsappError(false);
+                  onClearSubmitError();
+                }}
               />
-              {whatsappError && (
-                <span className="lead-field-error">Informe um WhatsApp válido com DDD</span>
-              )}
-            </label>
+            </div>
 
             {submitError && (
               <p className="lead-submit-error" role="alert">

@@ -75,9 +75,12 @@ export default async function handler(request, response) {
       return response.status(400).json({ error: 'WhatsApp inválido' });
     }
 
-    const maturidadeValue = maturidade === null || maturidade === undefined || maturidade === ''
-      ? null
-      : Number(maturidade);
+    const maturidadeMissing =
+      maturidade === null || maturidade === undefined || maturidade === '';
+    const maturidadeValue = maturidadeMissing ? null : Number(maturidade);
+    if (maturidadeValue !== null && !Number.isFinite(maturidadeValue)) {
+      return response.status(400).json({ error: 'Maturidade inválida' });
+    }
 
     await pool.query(
       `INSERT INTO leads (nome, hospital, whatsapp, maturidade)

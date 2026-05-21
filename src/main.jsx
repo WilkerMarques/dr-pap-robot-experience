@@ -234,7 +234,8 @@ function App() {
           nome: lead.nome,
           hospital: lead.hospital,
           whatsapp: whatsappDigits,
-          maturidade: percentage || null,
+          maturidade:
+            answers.length >= quizQuestions.length ? percentage : null,
         }),
       });
 
